@@ -1,0 +1,25 @@
+{
+  "environment": "Production-Dubai-Cloud",
+  "identity_management": {
+    "root_user": {
+      "mfa_enabled": true
+    },
+    "user_roles": [
+      {
+        "role_name": "Read-Only-Auditor",
+        "permissions": ["view_logs", "read_metrics"]
+      },
+      {
+        "role_name": "Hardened-Admin-Role",
+        "permissions": ["read_storage", "write_storage"] 
+      }
+    ]
+  },
+  "backup_lifecycle": {
+    "retention_days": 90,
+    "encryption_algorithm": "AES-256"
+  },
+  "deployment_pipeline": {
+    "stages": ["Build", "Unit-Test", "Trivy-Security-Scan", "Deploy"]
+  }
+}

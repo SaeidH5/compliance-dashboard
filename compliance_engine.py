@@ -1,100 +1,112 @@
 import json
-import sys
+import gradio as gr
+from datetime import datetime
 
-COMPLIANCE_MATRIX = {
+COMPLIANCE_DATABASE = {
     "CONTROL-01": {
-        "title": "Multi-Factor Authentication (MFA) Implementation",
-        "description": "Enforce MFA for all remote, administrative, and privileged infrastructure access.",
-        "mappings": {
-            "NIST_CSF_v2": "PR.AA-P1",
-            "ISO_27001_2022": "A.5.15",
-            "DESC_ISR_v3": "Domain 6 (Access Control)"
-        }
+        "title": "IAM Privileged Access Controls",
+        "mappings": {"NIST": "PR.AA-P1", "ISO": "A.5.15", "DESC_ISR": "Domain 6"},
+        "remediation": "🚨 FIX ACTION: Audit your configuration file. Ensure 'root_user' has 'mfa_enabled': true, and remove any wildcard ('*') administrative privileges from standard user roles."
     },
     "CONTROL-02": {
-        "title": "Immutable Backup Configuration",
-        "description": "Maintain isolated, encrypted backups with strict retention policies to resist ransomware.",
-        "mappings": {
-            "NIST_CSF_v2": "PR.DS-P11",
-            "ISO_27001_2022": "A.8.13",
-            "DESC_ISR_v3": "Domain 5 (Communications & Operations)"
-        }
+        "title": "Backup Retention & Immutability Lifecycle",
+        "mappings": {"NIST": "PR.DS-P11", "ISO": "A.8.13", "DESC_ISR": "Domain 5"},
+        "remediation": "🚨 FIX ACTION: Update your backup policy object. Set 'retention_days' to 90 or higher and ensure 'encryption_algorithm' is strictly set to 'AES-256'."
     },
     "CONTROL-03": {
         "title": "Continuous Vulnerability Management Pipeline",
-        "description": "Execute quarterly external network scans and validate code vulnerabilities via automated CI pipelines.",
-        "mappings": {
-            "NIST_CSF_v2": "DE.CM-P1",
-            "ISO_27001_2022": "A.8.8",
-            "DESC_ISR_v3": "Domain 9 (Operations Security)"
-        }
-    },
-    "CONTROL-04": {
-        "title": "Incident Response Plan & Cyber Drill Validation",
-        "description": "Maintain a fully documented incident plan with annual simulation drills.",
-        "mappings": {
-            "NIST_CSF_v2": "RS.RP-P1",
-            "ISO_27001_2022": "A.5.24",
-            "DESC_ISR_v3": "Domain 11 (Incident Management)"
-        }
+        "mappings": {"NIST": "DE.CM-P1", "ISO": "A.8.8", "DESC_ISR": "Domain 9"},
+        "remediation": "🚨 FIX ACTION: Edit your automated pipeline steps array. Add a security scanning stage containing 'trivy', 'nessus', or 'sonar' binaries."
     }
 }
 
-AUDIT_EVIDENCE_STATUS = {
-    "CONTROL-01": "COMPLIANT",
-    "CONTROL-02": "NON_COMPLIANT", 
-    "CONTROL-03": "COMPLIANT",
-    "CONTROL-04": "COMPLIANT"
-}
-
-def calculate_framework_readiness():
-    framework_scores = {
-        "NIST_CSF_v2": {"passed": 0, "total": 0},
-        "ISO_27001_2022": {"passed": 0, "total": 0},
-        "DESC_ISR_v3": {"passed": 0, "total": 0}
-    }
+def analyze_advanced_config(file_obj):
+    if file_obj is None:
+        return "Please upload an enterprise configuration JSON file.", "", ""
     
-    detailed_findings = {}
+    try:
+        with open(file_obj.name, 'r') as f:
+            data = json.load(f)
+            
+        detected_statuses = {}
 
-    for ctrl_id, ctrl_meta in COMPLIANCE_MATRIX.items():
-        status = AUDIT_EVIDENCE_STATUS.get(ctrl_id, "NON_COMPLIANT")
-        is_passed = 1 if status == "COMPLIANT" else 0
+        iam = data.get("identity_management", {})
+        root_mfa = iam.get("root_user", {}).get("mfa_enabled", False)
+
+        has_wildcard_policy = False
+        for role in iam.get("user_roles", []):
+            if "*" in role.get("permissions", []):
+                has_wildcard_policy = True
+                
+        if root_mfa and not has_wildcard_policy:
+            detected_statuses["CONTROL-01"] = "COMPLIANT"
+        else:
+            detected_statuses["CONTROL-01"] = "NON_COMPLIANT"
+
+        backups = data.get("backup_lifecycle", {})
+        retention = backups.get("retention_days", 0)
+        encryption = backups.get("encryption_algorithm", "")
+
+        if retention >= 90 and encryption == "AES-256":
+            detected_statuses["CONTROL-02"] = "COMPLIANT"
+        else:
+            detected_statuses["CONTROL-02"] = "NON_COMPLIANT"
+
+        pipeline_stages = data.get("deployment_pipeline", {}).get("stages", [])
+
+        approved_scanners = ["trivy", "nessus", "aquasec", "snyk"]
+        scanner_detected = any(scanner in [stage.lower() for stage in pipeline_stages] for scanner in approved_scanners)
         
-        detailed_findings[ctrl_id] = {
-            "title": ctrl_meta["title"],
-            "status": status,
-            "mapped_requirements": ctrl_meta["mappings"]
-        }
+        if scanner_detected:
+            detected_statuses["CONTROL-03"] = "COMPLIANT"
+        else:
+            detected_statuses["CONTROL-03"] = "NON_COMPLIANT"
 
-        for framework in framework_scores.keys():
-            if framework in ctrl_meta["mappings"]:
-                framework_scores[framework]["total"] += 1
-                framework_scores[framework]["passed"] += is_passed
+    except Exception as e:
+        return f"❌ Parsing Error: Ensure valid structure. Details: {str(e)}", "", ""
 
-    readiness_summary = {}
-    for fw, counts in framework_scores.items():
-        percentage = (counts["passed"] / counts["total"] * 100) if counts["total"] > 0 else 0
-        readiness_summary[fw] = f"{percentage:.1f}% Ready ({counts['passed']}/{counts['total']} Controls)"
-
-    return {
-        "executive_readiness_summary": readiness_summary,
-        "granular_compliance_findings": detailed_findings
-    }
-
-def main():
-    print("[+] Initiating Cross-Framework Compliance Gap Assessment Engine...")
-    report = calculate_framework_readiness()
+    total = len(COMPLIANCE_DATABASE)
+    passed = sum(1 for s in detected_statuses.values() if s == "COMPLIANT")
+    pct = (passed / total) * 100
     
-    print("\n================ EXECUTIVE DASHBOARD POSTURE BRIEF ================")
-    for framework, baseline in report["executive_readiness_summary"].items():
-        print(f" [*] {framework}: {baseline}")
-    print("===================================================================\n")
+    summary_text = f"📊 Posture Status: {pct:.1f}% Compliant ({passed}/{total} Passed)\n" \
+                   f" • NIST CSF v2.0: {pct:.1f}%\n" \
+                   f" • ISO/IEC 27001:2022: {pct:.1f}%\n" \
+                   f" • Dubai DESC ISR v3.0: {pct:.1f}%"
+
+    remediation_playbook = ""
+    findings = {}
+    for cid, meta in COMPLIANCE_DATABASE.items():
+        status = detected_statuses[cid]
+        findings[cid] = {"title": meta["title"], "status": status, "mappings": meta["mappings"]}
+        if status == "NON_COMPLIANT":
+            remediation_playbook += f"### {cid}: {meta['title']}\n* **Gaps Identified:** Failed specific technical validation criteria.\n* {meta['remediation']}\n\n"
+
+    if not remediation_playbook:
+        remediation_playbook = "✅ **Compliance Confirmed.** All advanced schema controls passed policy thresholds."
+
+    report = {"summary": {"NIST": f"{pct}%", "ISO": f"{pct}%", "DESC": f"{pct}%"}, "findings": findings}
+    return summary_text, remediation_playbook, json.dumps(report, indent=2)
+
+with gr.Blocks(title="Advanced Tech GRC Compliance Auditor") as demo:
+    gr.Markdown("# 🛡️ Automated Multi-Framework Regulatory Compliance Auditor")
+    gr.Markdown("Parses nested configuration objects, validates security arrays, and analyzes control logic thresholds.")
     
-    output_file = "compliance_gap_analysis.json"
-    with open(output_file, 'w') as f:
-        json.dump(report, f, indent=4)
-        
-    print(f"[SUCCESS] Compliance artifacts archived to: {output_file}")
+    with gr.Row():
+        with gr.Column(scale=1):
+            file_input = gr.File(label="Upload complex_system_state.json", file_types=[".json"])
+            submit_btn = gr.Button("Execute Deep Compliance Scan", variant="primary")
+        with gr.Column(scale=1):
+            output_summary = gr.Textbox(label="Executive Readiness Summary", lines=5)
+            
+    gr.Markdown("---")
+    with gr.Row():
+        with gr.Column(scale=1):
+            output_remediation = gr.Markdown(value="*Upload configuration file to generate playbooks...*")
+        with gr.Column(scale=1):
+            output_json = gr.Code(label="compliance_gap_analysis.json", language="json")
+
+    submit_btn.click(fn=analyze_advanced_config, inputs=[file_input], outputs=[output_summary, output_remediation, output_json])
 
 if __name__ == "__main__":
-    main()
+    demo.launch()
