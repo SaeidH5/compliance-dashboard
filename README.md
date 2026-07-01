@@ -1,31 +1,38 @@
-# Multi-Framework Regulatory Compliance & Gap Analysis Dashboard
+# 🛡️ Automated Multi-Framework Regulatory Compliance Auditor
 
-## 🚀 Architectural Overview
-This Technical GRC utility establishes an automated data schema cross-mapping organizational technical security controls to three critical security baselines: **NIST CSF v2.0**, **ISO/IEC 27001:2022**, and the **Dubai Electronic Security Center (DESC) ISR v3.0** standard. 
+An enterprise-grade Compliance-as-Code (CSPM) automation engine that ingests infrastructure configuration states, evaluates nested asset criteria thresholds, and dynamically maps control gaps across global and regional regulatory frameworks.
 
-By mapping internal operational controls directly to disparate regulatory IDs, the engine enforces an architecture of **"Assess Once, Comply Many"** eliminating redundant assessment tracking and highlighting cross-framework gap dependencies instantly.
+## 📊 Supported Framework Mappings
+- **NIST CSF v2.0** (National Institute of Standards and Technology)
+- **ISO/IEC 27001:2022** (Information Security Management)
+- **Dubai DESC ISR v3.0** (Information Security Regulation)
 
-## 📊 Sample Posture JSON Output
-```json
-{
-    "executive_readiness_summary": {
-        "NIST_CSF_v2": "75.0% Ready (3/4 Controls)",
-        "ISO_27001_2022": "75.0% Ready (3/4 Controls)",
-        "DESC_ISR_v3": "75.0% Ready (3/4 Controls)"
-    }
-}
-```
+## ⚡ Technical Capabilities
+- **Advanced Schema Validation:** Evaluates deeply nested JSON configuration structures instead of arbitrary flat variables.
+- **Array Token Scanning:** Loops through deployment arrays to dynamically verify the presence of approved security scanner binaries (`trivy`, `nessus`, etc.).
+- **Privilege Escalation Auditing:** Traverses IAM role permission blocks to isolate dangerous wildcard (`*`) administration policies.
+- **Dynamic Playbook Generation:** Automatically outputs tailored, markdown-formatted technical remediation steps for any failed control.
+- **Interactive UI Dashboard:** Built-in Gradio web server for seamless, file-drop auditing interaction.
 
-## 🎯 Key Features
-* **Cross-Framework Control Mapping:** Directly translates single operational safeguards into explicit requirements across global and regional compliance baselines simultaneously.
-* **Automated Posture Calculations:** Evaluates active audit evidence status to dynamically generate percentage-based compliance readiness metrics.
-* **Localized Regulatory Alignment:** Pre-mapped to the **Dubai Electronic Security Center (DESC) ISR v3.0** standard for immediate regional audit readiness.
+## 🚀 Getting Started
 
-## ⚙️ How to Run & Test
-To execute the compliance gap assessment engine and generate the structured JSON audit artifacts locally, run:
-
-```powershell
+### 1. Installation & Environment Setup
+Clone the repository and install the required dependencies:
+```bash
 git clone https://github.com/Saeidh5/compliance-dashboard.git
 cd compliance-dashboard
+pip install gradio
+```
+### 2. Launch the Web Interface
+```bash
 python compliance_engine.py
 ```
+Open your browser and navigate to http://127.0.0.1:7860
+
+### 3. Running an Automated Scan
+- Locate the mock file system_state.json provided in this repository.
+- Drag and drop it into the Ingest Audit Configuration Evidence interface panel.
+- Click Execute Deep Compliance Scan to generate real-time metrics, dynamic remediation playbooks, and the compliance report artifact.
+
+## 📄 Output Artifacts
+The application automatically generates a standardized, machine-readable compliance_gap_analysis.json file upon each run. This structured data is optimized for ingestion into SIEM platforms or executive BI dashboards (e.g., PowerBI) for continuous compliance monitoring.
