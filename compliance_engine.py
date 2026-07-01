@@ -86,6 +86,10 @@ def analyze_advanced_config(file_obj):
         remediation_playbook = "✅ **Compliance Confirmed.** All advanced schema controls passed policy thresholds."
 
     report = {"summary": {"NIST": f"{pct}%", "ISO": f"{pct}%", "DESC": f"{pct}%"}, "findings": findings}
+
+    with open("compliance_gap_analysis.json", "w") as out:
+        json.dump(report, out, indent=4)
+        
     return summary_text, remediation_playbook, json.dumps(report, indent=2)
 
 with gr.Blocks(title="Advanced Tech GRC Compliance Auditor") as demo:

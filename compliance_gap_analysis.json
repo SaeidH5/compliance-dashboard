@@ -1,44 +1,35 @@
 {
-    "executive_readiness_summary": {
-        "NIST_CSF_v2": "75.0% Ready (3/4 Controls)",
-        "ISO_27001_2022": "75.0% Ready (3/4 Controls)",
-        "DESC_ISR_v3": "75.0% Ready (3/4 Controls)"
+    "summary": {
+        "NIST": "66.66666666666666%",
+        "ISO": "66.66666666666666%",
+        "DESC": "66.66666666666666%"
     },
-    "granular_compliance_findings": {
+    "findings": {
         "CONTROL-01": {
-            "title": "Multi-Factor Authentication (MFA) Implementation",
+            "title": "IAM Privileged Access Controls",
             "status": "COMPLIANT",
-            "mapped_requirements": {
-                "NIST_CSF_v2": "PR.AA-P1",
-                "ISO_27001_2022": "A.5.15",
-                "DESC_ISR_v3": "Domain 6 (Access Control)"
+            "mappings": {
+                "NIST": "PR.AA-P1",
+                "ISO": "A.5.15",
+                "DESC_ISR": "Domain 6"
             }
         },
         "CONTROL-02": {
-            "title": "Immutable Backup Configuration",
-            "status": "NON_COMPLIANT",
-            "mapped_requirements": {
-                "NIST_CSF_v2": "PR.DS-P11",
-                "ISO_27001_2022": "A.8.13",
-                "DESC_ISR_v3": "Domain 5 (Communications & Operations)"
+            "title": "Backup Retention & Immutability Lifecycle",
+            "status": "COMPLIANT",
+            "mappings": {
+                "NIST": "PR.DS-P11",
+                "ISO": "A.8.13",
+                "DESC_ISR": "Domain 5"
             }
         },
         "CONTROL-03": {
             "title": "Continuous Vulnerability Management Pipeline",
-            "status": "COMPLIANT",
-            "mapped_requirements": {
-                "NIST_CSF_v2": "DE.CM-P1",
-                "ISO_27001_2022": "A.8.8",
-                "DESC_ISR_v3": "Domain 9 (Operations Security)"
-            }
-        },
-        "CONTROL-04": {
-            "title": "Incident Response Plan & Cyber Drill Validation",
-            "status": "COMPLIANT",
-            "mapped_requirements": {
-                "NIST_CSF_v2": "RS.RP-P1",
-                "ISO_27001_2022": "A.5.24",
-                "DESC_ISR_v3": "Domain 11 (Incident Management)"
+            "status": "NON_COMPLIANT",
+            "mappings": {
+                "NIST": "DE.CM-P1",
+                "ISO": "A.8.8",
+                "DESC_ISR": "Domain 9"
             }
         }
     }
